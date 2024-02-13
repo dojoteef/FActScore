@@ -131,23 +131,47 @@ class Retrieval(object):
         self.encoder = encoder
         assert self.batch_size is not None
     
-    def load_cache(self):
+    def load_cache(self, allow_retry=True):
         if os.path.exists(self.cache_path):
-            with open(self.cache_path, "r") as f:
-                self.cache = json.load(f)
+            while True:
+                try:
+                    with open(self.cache_path, "r") as f:
+                        self.cache = json.load(f)
+                    break
+                except Exception:
+                    if not allow_retry:
+                        assert False
+                    print ("Json Error: Retry in 5sec...")
+                    time.sleep(5)
         else:
             self.cache = {}
         if os.path.exists(self.embed_cache_path):
-            with open(self.embed_cache_path, "rb") as f:
-                self.embed_cache = pkl.load(f)
+            while True:
+                try:
+                    with open(self.embed_cache_path, "rb") as f:
+                        self.embed_cache = pkl.load(f)
+                    break
+                except Exception:
+                    if not allow_retry:
+                        assert False
+                    print ("Pickle Error: Retry in 5sec...")
+                    time.sleep(5)
         else:
             self.embed_cache = {}
     
-    def save_cache(self):
+    def save_cache(self, allow_retry=True):
         if self.add_n > 0:
             if os.path.exists(self.cache_path):
-                with open(self.cache_path, "r") as f:
-                    new_cache = json.load(f)
+                while True:
+                    try:
+                        with open(self.cache_path, "r") as f:
+                            new_cache = json.load(f)
+                        break
+                    except Exception:
+                        if not allow_retry:
+                            assert False
+                        print ("Json Error: Retry in 5sec...")
+                        time.sleep(5)
                 self.cache.update(new_cache)
             
             with open(self.cache_path, "w") as f:
